@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Threaded Matrix Multiplication Animation</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; text-align: center; }
+.grid { display: grid; grid-template-columns: repeat(4, 55px); gap: 5px; justify-content: center; }
+.cell { border: 1px solid #555; padding: 16px 4px; background: #f5f5f5; }
+.active { background: #ffe08a; }
+.done { background: #c8f7c5; }
+.container { display: flex; gap: 30px; justify-content: center; align-items: center; flex-wrap: wrap; }
+h2 { margin-bottom: 8px; }
+button { padding: 10px 22px; font-size: 16px; cursor: pointer; }
+#status { margin: 15px; font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>Matrix Multiplication — Thread Animation</h1>
+<p>This browser animation illustrates the same cell-wise idea used by the Python program.</p>
+<div id="status">Press START</div>
+<div class="container">
+  <div><h2>Matrix A</h2><div id="A" class="grid"></div></div>
+  <div><h2>Matrix B</h2><div id="B" class="grid"></div></div>
+  <div><h2>Matrix C</h2><div id="C" class="grid"></div></div>
+</div>
+<br>
+<button onclick="start()">START</button>
+<button onclick="clearAll()">CLEAR</button>
+
+<script>
+const A = [[1,2,3,4],[2,1,2,3],[3,2,1,2],[4,3,2,1]];
+const B = [[1,0,2,1],[2,1,0,2],[1,2,1,0],[0,1,2,1]];
+let order = [];
+for (let i=0;i<4;i++) for (let j=0;j<4;j++) order.push([i,j]);
+
+function draw(id, M, fill=false) {
+  const box=document.getElementById(id); box.innerHTML="";
+  M.forEach(row=>row.forEach(v=>{
+    const d=document.createElement("div"); d.className="cell";
+    d.textContent=fill ? "" : v; box.appendChild(d);
+  }));
+}
+function clearAll(){
+  draw("A",A); draw("B",B); draw("C",[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]);
+  document.getElementById("status").textContent="Press START";
+}
+function start(){
+  clearAll(); let k=0;
+  const timer=setInterval(()=>{
+    if(k>=order.length){clearInterval(timer); return;}
+    const [i,j]=order[k];
+    const c=[...document.querySelectorAll("#C .cell")];
+    const a=[...document.querySelectorAll("#A .cell")];
+    const b=[...document.querySelectorAll("#B .cell")];
+    a.forEach(x=>x.classList.remove("active")); b.forEach(x=>x.classList.remove("active"));
+    for(let col=0;col<4;col++) a[i*4+col].classList.add("active");
+    for(let row=0;row<4;row++) b[row*4+j].classList.add("active");
+    let sum=0;
+    for(let t=0;t<4;t++) sum += A[i][t]*B[t][j];
+    c[i*4+j].textContent=sum; c[i*4+j].classList.add("done");
+    document.getElementById("status").textContent =
+      `Thread for C[${i}][${j}] completed`;
+    k++;
+  },500);
+}
+clearAll();
+</script>
+</body>
+</html>
